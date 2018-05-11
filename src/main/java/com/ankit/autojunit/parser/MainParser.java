@@ -1,4 +1,4 @@
-package parser;
+package com.ankit.autojunit.parser;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
