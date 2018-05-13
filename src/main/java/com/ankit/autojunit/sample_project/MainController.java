@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/autojunit")
+@RequestMapping("/autojunit/sample")
 public class MainController {
 
     @Autowired
