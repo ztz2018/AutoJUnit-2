@@ -9,5 +9,6 @@ public class Variable {
     private String classPackage;
     private String identifierName;
     private String initializationString;
+    private boolean isPrimitive;
 
 }

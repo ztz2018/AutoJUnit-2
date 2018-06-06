@@ -8,8 +8,8 @@ import java.util.List;
 public class MyMethodDeclaration {
 
     private String methodClassName;
-    private String methodName;
     private String methodClassPackage;
+    private String methodName;
     private String methodReturnTypeClass;
     private String methodReturnTypeClassPackage;
     private List<Variable> methodArguments;
