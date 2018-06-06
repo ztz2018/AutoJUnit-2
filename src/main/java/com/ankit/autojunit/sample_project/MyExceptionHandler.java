@@ -12,13 +12,9 @@ public class MyExceptionHandler extends ResponseEntityExceptionHandler{
     @ExceptionHandler(value = {Exception.class})
     protected ResponseEntity handleConflict(RuntimeException ex, WebRequest request) {
 
-        String exType = "";
-        if (ex instanceof NullPointerException)
-        {
-            exType = "NPE";
-        }
-
-        return ResponseEntity.ok("It's ok! The exception " + exType + " has been caught and is being diagnosed. ex msg : " + ex.getMessage());
+        return ResponseEntity.ok("It's ok! The exception "
+                + " has been caught and is being diagnosed. ex msg : "
+                + ex.getMessage());
 
     }
 

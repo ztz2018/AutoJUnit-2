@@ -1,19 +1,11 @@
 package com.ankit.autojunit.processor.reader;
 
-import com.ankit.autojunit.processor.model.ParsedUnit;
-import com.ankit.autojunit.processor.parser.MainParser;
-import com.github.javaparser.JavaParser;
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-
-import java.io.FileReader;
-import java.util.Optional;
 
 
 /**
@@ -26,40 +18,20 @@ import java.util.Optional;
 public class MainReader {
 
     @Autowired
-    MainParser mainParser;
+    ReaderService readerService;
+
+    @Value("${reader.rootDir}")
+    private String rootDir ;
+
+    @Value("${reader.classPackage}")
+    private String classPackage;
+
+    @Value("${reader.className}")
+    private String className;
 
     @GetMapping("/read")
     public ResponseEntity reader() {
-
-        String fileLocation = "src/main/java/com/ankit/autojunit/sample_project/";
-        String fileName = "OperationsServiceImpl";
-        String fileExtenstion = "java";
-
-        ResponseEntity response;
-
-        try {
-            response = ResponseEntity.ok(parseFileWithName(fileLocation, fileName, fileExtenstion));
-        } catch (Exception e) {
-            response = ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e);
-        }
-        return response;
+        return ResponseEntity.ok(readerService.parseFileWithName(rootDir, classPackage, className));
     }
-
-    private ParsedUnit parseFileWithName(String fileLocation, String fileName, String fileExtension) {
-
-        try {
-            CompilationUnit compilationUnit = JavaParser.parse(new FileReader(fileLocation + fileName + "." + fileExtension));
-            Optional<ClassOrInterfaceDeclaration> classMain = compilationUnit.getClassByName(fileName);
-            if (classMain.isPresent()) {
-                ClassOrInterfaceDeclaration operationServicempl = classMain.get();
-                return mainParser.parseTheDeclaration(operationServicempl);
-            } else {
-                throw new NullPointerException("Not found : " + fileName + "!");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
 
 }

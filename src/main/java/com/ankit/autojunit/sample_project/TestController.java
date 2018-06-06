@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/autojunit/sample")
-public class MainController {
+public class TestController {
 
     @Autowired
     OperationsService operationsService;
