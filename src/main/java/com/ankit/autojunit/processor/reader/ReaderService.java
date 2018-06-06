@@ -6,4 +6,5 @@ public interface ReaderService {
 
     ParsedUnit parseFileWithName(String rootDir, String fileLocation, String fileName);
 
+    String processFilePath(String rootDir, String classPackage, String className);
 }

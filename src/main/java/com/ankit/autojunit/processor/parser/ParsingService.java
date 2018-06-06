@@ -48,6 +48,9 @@ public interface ParsingService {
      */
     List<MyMethodDeclaration> getExternalServices(ClassOrInterfaceDeclaration clazz, List<Variable> autowiredObjects);
 
+    void recFindExternalServices(ClassOrInterfaceDeclaration clazz, List<Variable> autowiredObjects,
+                List<MyMethodDeclaration> externalServices, Object block);
+
     /**
      * A Helper api to find the autowired object by the name of the identifier
      */

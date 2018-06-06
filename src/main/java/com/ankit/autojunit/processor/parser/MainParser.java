@@ -44,6 +44,7 @@ public class MainParser implements ParsingService{
     }
 
     //   ToDo : As of now, it takes all the imports. Later, change to only required ones.
+    @Override
     public List<String> getRequiredImports(ClassOrInterfaceDeclaration clazz)
     {
         List<String> imports = new ArrayList<>();
@@ -53,6 +54,7 @@ public class MainParser implements ParsingService{
         return imports;
     }
 
+    @Override
     public String getCurrentPackageName(ClassOrInterfaceDeclaration clazz) {
         String currentPackageName = ((PackageDeclaration)((CompilationUnit) clazz.getParentNode().get())
                 .getPackageDeclaration().get()).toString();
@@ -61,6 +63,7 @@ public class MainParser implements ParsingService{
         return currentPackageName;
     }
 
+    @Override
     public List<Variable> getAutowiredObjects( ClassOrInterfaceDeclaration clazz, List<String> allImports, String currentPackageName)
     {
         List<Variable> autowiredObjects = new ArrayList<>();
@@ -81,6 +84,7 @@ public class MainParser implements ParsingService{
     }
 
     //  ToDo : what about those containing @Value
+    @Override
     public List<Variable> getGlobalVariables(ClassOrInterfaceDeclaration clazz, List<String> allImports, String currentPackageName)
     {
         List<Variable> variables = new ArrayList<>();
@@ -97,6 +101,7 @@ public class MainParser implements ParsingService{
     }
 
      // ToDo : This API will fail if any import is of type import blabla.bla.*
+    @Override
     public String searchImportsForClass(List<String> allImports, String currentPackageName, String className)
     {
         if (isPrimitiveOrJavaLangClass(className)) {
@@ -112,6 +117,7 @@ public class MainParser implements ParsingService{
         return searchImport;
     }
 
+    @Override
     public boolean isPrimitiveOrJavaLangClass(String className) {
         String primitives[] = new String[]{"int", "char", "double", "float", "byte", "short", "boolean", "void", "long"};
         String javaLangClasses[] = new String[]{"Integer", "Double", "Float", "String", "Long", "Object", "StringBuilder"};
@@ -129,6 +135,7 @@ public class MainParser implements ParsingService{
         return false;
     }
 
+    @Override
     public List<MyMethodDeclaration> getExternalServices(ClassOrInterfaceDeclaration clazz, List<Variable> autowiredObjects)
     {
         List<MyMethodDeclaration> externalServices = new ArrayList<>();
@@ -150,7 +157,8 @@ public class MainParser implements ParsingService{
         return  externalServices;
     }
 
-    private void recFindExternalServices(ClassOrInterfaceDeclaration clazz, List<Variable> autowiredObjects,
+    @Override
+    public void recFindExternalServices(ClassOrInterfaceDeclaration clazz, List<Variable> autowiredObjects,
                                          List<MyMethodDeclaration> externalServices, Object block)
     {
         if (block instanceof IfStmt) {
@@ -207,12 +215,14 @@ public class MainParser implements ParsingService{
 
     }
 
+    @Override
     public Variable getAutowiredObjectForExternalServiceName(List<Variable> autowiredObjects, String externalServiceName) {
         return autowiredObjects.stream().filter(obj ->
                 obj.getIdentifierName().equals(externalServiceName)).collect(Collectors.toList()).get(0);
     }
 
     //  ToDo : What about overloaded methods
+    @Override
     public MethodDeclaration getMethodDeclarationByName(ClassOrInterfaceDeclaration clazz, String methodName) {
         for(Node node : clazz.getChildNodes()) {
             if(node instanceof MethodDeclaration) {

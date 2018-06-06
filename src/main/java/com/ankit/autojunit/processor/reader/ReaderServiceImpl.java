@@ -34,7 +34,8 @@ public class ReaderServiceImpl implements ReaderService {
         }
     }
 
-    private String processFilePath(String rootDir, String classPackage, String className) {
+    @Override
+    public String processFilePath(String rootDir, String classPackage, String className) {
 
         StringBuilder path = new StringBuilder();
         rootDir = rootDir.contains(".") ? rootDir.replaceAll("[/.]", "/") : rootDir;
