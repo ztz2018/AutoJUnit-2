@@ -28,23 +28,7 @@ import java.util.stream.Collectors;
 @Component
 public class MainParser {
 
-    public ParsedUnit parseFileWithName(String fileLocation, String fileName, String fileExtension) {
-
-        try {
-            CompilationUnit compilationUnit = JavaParser.parse(new FileReader(fileLocation + fileName + "." + fileExtension));
-            Optional<ClassOrInterfaceDeclaration> classMain = compilationUnit.getClassByName(fileName);
-            if (classMain.isPresent()) {
-                ClassOrInterfaceDeclaration operationServicempl = classMain.get();
-                return parseTheDeclaration(operationServicempl);
-            } else {
-                throw new NullPointerException("Not found : " + fileName + "!");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private ParsedUnit parseTheDeclaration(ClassOrInterfaceDeclaration clazz) {
+    public ParsedUnit parseTheDeclaration(ClassOrInterfaceDeclaration clazz) {
 
         List<String> allImports = getRequiredImports(clazz);
         String currentPackageName = getCurrentPackageName(clazz);
