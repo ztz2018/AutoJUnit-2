@@ -1,10 +1,14 @@
 package com.ankit.autojunit.processor.model.child;
 
+import lombok.Data;
+
 import java.util.List;
 
-public class MethodDeclaration {
+@Data
+public class MyMethodDeclaration {
 
     private String methodClassName;
+    private String methodName;
     private String methodClassPackage;
     private String methodReturnTypeClass;
     private String methodReturnTypeClassPackage;
