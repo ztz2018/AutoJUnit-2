@@ -14,7 +14,6 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -56,7 +55,7 @@ public class MainParser {
         parsedUnit.setImports(allImports);
         parsedUnit.setAutowiredObjects(autowiredObjects);
         parsedUnit.setClassVariables(getGlobalVariables(clazz, parsedUnit.getImports(), currentPackageName));
-        parsedUnit.setExternalServices(getExternalServices(clazz, autowiredObjects, allImports, currentPackageName));
+        parsedUnit.setExternalServices(getExternalServices(clazz, autowiredObjects));
 
         return parsedUnit;
     }
@@ -168,17 +167,9 @@ public class MainParser {
      *  This API summarizes all the calls that are made to external services.
      *  Keeps track of the class name, method name, return type, arguments, method access
      */
-    private List<MyMethodDeclaration> getExternalServices(ClassOrInterfaceDeclaration clazz, List<Variable> autowiredObjects,
-            List<String> allImports, String currentPackageName)
+    private List<MyMethodDeclaration> getExternalServices(ClassOrInterfaceDeclaration clazz, List<Variable> autowiredObjects)
     {
         List<MyMethodDeclaration> externalServices = new ArrayList<>();
-
-        //        Object obj = ((MethodCallExpr) ((ExpressionStmt) ((BlockStmt) ((MyMethodDeclaration)clazz.getChildNodes().get(6)).getBody().get()).getStatements().get(2)).getExpression());
-        //((MethodCallExpr)((ExpressionStmt)((BlockStmt)((IfStmt)((BlockStmt)((ForStmt)((BlockStmt)((MyMethodDeclaration)clazz.getChildNodes().get(7)).getBody().get()).getStatements().get(2)).getBody()).getStatements().get(0)).getThenStmt()).getStatements().get(0)).getExpression())
-
-        // iterate over all the methods :
-            // if the method is public
-                // iterate over every stmt
 
         clazz.getChildNodes().stream().forEach(node -> {
 
@@ -200,8 +191,6 @@ public class MainParser {
     private void recFindExternalServices(ClassOrInterfaceDeclaration clazz, List<Variable> autowiredObjects,
                                          List<MyMethodDeclaration> externalServices, Object block)
     {
-//      ToDo :   See this :
-//        ((VariableDeclarationExpr) ((ExpressionStmt) block).getExpression()).getVariables().get(0).getTypeAsString();
         if (block instanceof IfStmt) {
             IfStmt ifStmtBlock = (IfStmt) block;
             ((BlockStmt)ifStmtBlock.getThenStmt()).getStatements().stream().forEach(stmt -> {
@@ -242,9 +231,11 @@ public class MainParser {
                     methodDeclaration.setMethodClassName(autowiredObject.getClassName());
                     methodDeclaration.setMethodClassPackage(autowiredObject.getClassPackage());
                     methodDeclaration.setMethodName(methodCallExpr.getNameAsString());
+
+                    //  ToDo : we need to visit the external (autowired) class and locate the method in order to find its return type and arguments type
+
                     List<Variable> parameters = new ArrayList<>();
 
-                    // 5 things are pending
 
                     externalServices.add(methodDeclaration);
                 }
