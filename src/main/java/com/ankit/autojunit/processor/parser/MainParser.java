@@ -29,8 +29,6 @@ import java.util.stream.Collectors;
 @Component
 public class MainParser {
 
-    private List<Variable> autowiredObjects = new ArrayList<>();
-
     public ParsedUnit parseFileWithName(String fileLocation, String fileName, String fileExtension) {
 
         try {
@@ -51,13 +49,14 @@ public class MainParser {
 
         List<String> allImports = getRequiredImports(clazz);
         String currentPackageName = getCurrentPackageName(clazz);
+        List<Variable> autowiredObjects = getAutowiredObjects(clazz, allImports, currentPackageName);
         ParsedUnit parsedUnit = new ParsedUnit();
 
         parsedUnit.setClassName(clazz.getNameAsString());
         parsedUnit.setImports(allImports);
-        parsedUnit.setAutowiredObjects(getAutowiredObjects(clazz, allImports, currentPackageName));
+        parsedUnit.setAutowiredObjects(autowiredObjects);
         parsedUnit.setClassVariables(getGlobalVariables(clazz, parsedUnit.getImports(), currentPackageName));
-        parsedUnit.setExternalServices(getExternalServices(clazz, allImports, currentPackageName));
+        parsedUnit.setExternalServices(getExternalServices(clazz, autowiredObjects, allImports, currentPackageName));
 
         return parsedUnit;
     }
@@ -106,7 +105,6 @@ public class MainParser {
                 }
             }
         }
-        this.autowiredObjects = autowiredObjects;
         return autowiredObjects;
     }
 
@@ -170,8 +168,8 @@ public class MainParser {
      *  This API summarizes all the calls that are made to external services.
      *  Keeps track of the class name, method name, return type, arguments, method access
      */
-    private List<MyMethodDeclaration> getExternalServices(ClassOrInterfaceDeclaration clazz, List<String> allImports,
-                                                          String currentPackageName)
+    private List<MyMethodDeclaration> getExternalServices(ClassOrInterfaceDeclaration clazz, List<Variable> autowiredObjects,
+            List<String> allImports, String currentPackageName)
     {
         List<MyMethodDeclaration> externalServices = new ArrayList<>();
 
@@ -190,7 +188,8 @@ public class MainParser {
                 if(iterator.next().compareTo(Modifier.PUBLIC) == 0) {
                     //  ToDo : if the method is empty, below line could throw NPE
                     BlockStmt methodBody = method.getBody().get();
-                    methodBody.getStatements().stream().forEach(stmt -> {recFindExternalServices(clazz, externalServices, stmt);});
+                    methodBody.getStatements().stream().forEach(stmt -> {recFindExternalServices(clazz, autowiredObjects,
+                            externalServices, stmt);});
                 }
             }
         });
@@ -198,26 +197,27 @@ public class MainParser {
         return  externalServices;
     }
 
-    private void recFindExternalServices(ClassOrInterfaceDeclaration clazz, List<MyMethodDeclaration> externalServices, Object block)
+    private void recFindExternalServices(ClassOrInterfaceDeclaration clazz, List<Variable> autowiredObjects,
+                                         List<MyMethodDeclaration> externalServices, Object block)
     {
 //      ToDo :   See this :
 //        ((VariableDeclarationExpr) ((ExpressionStmt) block).getExpression()).getVariables().get(0).getTypeAsString();
         if (block instanceof IfStmt) {
             IfStmt ifStmtBlock = (IfStmt) block;
             ((BlockStmt)ifStmtBlock.getThenStmt()).getStatements().stream().forEach(stmt -> {
-                recFindExternalServices(clazz, externalServices, stmt);
+                recFindExternalServices(clazz, autowiredObjects, externalServices, stmt);
             });
             if(ifStmtBlock.getElseStmt().isPresent()) {
                 ifStmtBlock = (IfStmt) ifStmtBlock.getElseStmt().get();
                 ((BlockStmt)ifStmtBlock.getThenStmt()).getStatements().stream().forEach(stmt -> {
-                    recFindExternalServices(clazz, externalServices, stmt);
+                    recFindExternalServices(clazz, autowiredObjects, externalServices, stmt);
                 });
             }
         }
         else if (block instanceof ForStmt) {
             ForStmt forStmt = (ForStmt) block;
             ((BlockStmt)forStmt.getBody()).getStatements().stream().forEach(stmt ->{
-                recFindExternalServices(clazz, externalServices, stmt);
+                recFindExternalServices(clazz, autowiredObjects, externalServices, stmt);
             });
         } else if (block instanceof WhileStmt) {
 
@@ -231,13 +231,14 @@ public class MainParser {
                 if (!scope.isPresent()){    // private method call
                     // ToDo : hey what about protected methods?
                     MethodDeclaration privateMethod = getMethodDeclarationByName(clazz, methodCallExpr.getNameAsString());
-                    privateMethod.getBody().get().getStatements().stream().forEach(stmt -> {recFindExternalServices(clazz, externalServices, stmt);});
+                    privateMethod.getBody().get().getStatements().stream().forEach(stmt -> {recFindExternalServices(clazz,
+                            autowiredObjects, externalServices, stmt);});
 
                 } else if (scope.get() instanceof MethodCallExpr) {       // ignore : car.getBlaBla().add(new shit());
 
                 } else if (scope.get() instanceof NameExpr) {       //  external calls : docService.createDoc(blabl);
                     MyMethodDeclaration methodDeclaration = new MyMethodDeclaration();
-                    Variable autowiredObject = getAutowiredObjectForExternalServiceName(((NameExpr) scope.get()).getNameAsString());
+                    Variable autowiredObject = getAutowiredObjectForExternalServiceName(autowiredObjects, ((NameExpr) scope.get()).getNameAsString());
                     methodDeclaration.setMethodClassName(autowiredObject.getClassName());
                     methodDeclaration.setMethodClassPackage(autowiredObject.getClassPackage());
                     methodDeclaration.setMethodName(methodCallExpr.getNameAsString());
@@ -256,8 +257,8 @@ public class MainParser {
     /**
      * A Helper api to find the autowired object by the name of the identifier
      */
-    private Variable getAutowiredObjectForExternalServiceName(String externalServiceName) {
-        return this.autowiredObjects.stream().filter(obj ->
+    private Variable getAutowiredObjectForExternalServiceName(List<Variable> autowiredObjects, String externalServiceName) {
+        return autowiredObjects.stream().filter(obj ->
                 obj.getIdentifierName().equals(externalServiceName)).collect(Collectors.toList()).get(0);
     }
 
