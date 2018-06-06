@@ -18,7 +18,6 @@ import com.github.javaparser.ast.stmt.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -26,7 +25,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
-public class MainParser {
+public class MainParser implements ParsingService{
 
     public ParsedUnit parseTheDeclaration(ClassOrInterfaceDeclaration clazz) {
 
@@ -44,11 +43,8 @@ public class MainParser {
         return parsedUnit;
     }
 
-    /**
-     *  Gets all the imports
-     *  ToDo : As of now, it takes all the imports. Later, change to only required ones.
-     */
-    private List<String> getRequiredImports(ClassOrInterfaceDeclaration clazz)
+    //   ToDo : As of now, it takes all the imports. Later, change to only required ones.
+    public List<String> getRequiredImports(ClassOrInterfaceDeclaration clazz)
     {
         List<String> imports = new ArrayList<>();
         ((CompilationUnit)clazz.getParentNode().get()).getImports().stream().forEach(imp ->{
@@ -57,7 +53,7 @@ public class MainParser {
         return imports;
     }
 
-    private String getCurrentPackageName(ClassOrInterfaceDeclaration clazz) {
+    public String getCurrentPackageName(ClassOrInterfaceDeclaration clazz) {
         String currentPackageName = ((PackageDeclaration)((CompilationUnit) clazz.getParentNode().get())
                 .getPackageDeclaration().get()).toString();
         currentPackageName = currentPackageName.contains("\n") ? currentPackageName.split("\n")[0] : currentPackageName;
@@ -65,14 +61,7 @@ public class MainParser {
         return currentPackageName;
     }
 
-    /**
-     *  Gets following details about autowired objects:
-     *      1. Class name
-     *      2. Identifier name
-     *      3. Class package
-     *      4. Initialization string (if any)
-     */
-    private List<Variable> getAutowiredObjects( ClassOrInterfaceDeclaration clazz, List<String> allImports, String currentPackageName)
+    public List<Variable> getAutowiredObjects( ClassOrInterfaceDeclaration clazz, List<String> allImports, String currentPackageName)
     {
         List<Variable> autowiredObjects = new ArrayList<>();
         for (Node node : clazz.getChildNodes()) {
@@ -91,12 +80,8 @@ public class MainParser {
         return autowiredObjects;
     }
 
-    /**
-     * Take only those field declarations which
-     *   #1> do not have any annotations
-     *   ToDo : what about those containing @Value
-     */
-    private List<Variable> getGlobalVariables(ClassOrInterfaceDeclaration clazz, List<String> allImports, String currentPackageName)
+    //  ToDo : what about those containing @Value
+    public List<Variable> getGlobalVariables(ClassOrInterfaceDeclaration clazz, List<String> allImports, String currentPackageName)
     {
         List<Variable> variables = new ArrayList<>();
         clazz.getChildNodes().stream().forEach(node -> {
@@ -111,11 +96,8 @@ public class MainParser {
         return variables;
     }
 
-    /**
-     *  Searches imports for a particular class, Returns current package if not found.
-     *  ToDo : This API will fail if any import is of type import blabla.bla.*
-     */
-    private String searchImportsForClass(List<String> allImports, String currentPackageName, String className)
+     // ToDo : This API will fail if any import is of type import blabla.bla.*
+    public String searchImportsForClass(List<String> allImports, String currentPackageName, String className)
     {
         if (isPrimitiveOrJavaLangClass(className)) {
             return null;
@@ -130,7 +112,7 @@ public class MainParser {
         return searchImport;
     }
 
-    private boolean isPrimitiveOrJavaLangClass(String className) {
+    public boolean isPrimitiveOrJavaLangClass(String className) {
         String primitives[] = new String[]{"int", "char", "double", "float", "byte", "short", "boolean", "void", "long"};
         String javaLangClasses[] = new String[]{"Integer", "Double", "Float", "String", "Long", "Object", "StringBuilder"};
 
@@ -147,11 +129,7 @@ public class MainParser {
         return false;
     }
 
-    /**
-     *  This API summarizes all the calls that are made to external services.
-     *  Keeps track of the class name, method name, return type, arguments, method access
-     */
-    private List<MyMethodDeclaration> getExternalServices(ClassOrInterfaceDeclaration clazz, List<Variable> autowiredObjects)
+    public List<MyMethodDeclaration> getExternalServices(ClassOrInterfaceDeclaration clazz, List<Variable> autowiredObjects)
     {
         List<MyMethodDeclaration> externalServices = new ArrayList<>();
 
@@ -229,19 +207,13 @@ public class MainParser {
 
     }
 
-    /**
-     * A Helper api to find the autowired object by the name of the identifier
-     */
-    private Variable getAutowiredObjectForExternalServiceName(List<Variable> autowiredObjects, String externalServiceName) {
+    public Variable getAutowiredObjectForExternalServiceName(List<Variable> autowiredObjects, String externalServiceName) {
         return autowiredObjects.stream().filter(obj ->
                 obj.getIdentifierName().equals(externalServiceName)).collect(Collectors.toList()).get(0);
     }
 
-    /**
-     * Another helper api to find the method by its name
-     * ToDo : What about overloaded methods
-     */
-    private MethodDeclaration getMethodDeclarationByName(ClassOrInterfaceDeclaration clazz, String methodName) {
+    //  ToDo : What about overloaded methods
+    public MethodDeclaration getMethodDeclarationByName(ClassOrInterfaceDeclaration clazz, String methodName) {
         for(Node node : clazz.getChildNodes()) {
             if(node instanceof MethodDeclaration) {
                 MethodDeclaration method = (MethodDeclaration) node;
