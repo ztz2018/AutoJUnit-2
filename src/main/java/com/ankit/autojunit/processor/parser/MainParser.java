@@ -50,9 +50,7 @@ public class MainParser {
     private ParsedUnit parseTheDeclaration(ClassOrInterfaceDeclaration clazz) {
 
         List<String> allImports = getRequiredImports(clazz);
-        String currentPackageName = ((PackageDeclaration)((CompilationUnit) clazz.getParentNode().get())
-                .getPackageDeclaration().get()).toString();
-
+        String currentPackageName = getCurrentPackageName(clazz);
         ParsedUnit parsedUnit = new ParsedUnit();
 
         parsedUnit.setClassName(clazz.getNameAsString());
@@ -75,6 +73,14 @@ public class MainParser {
             imports.add(imp.getNameAsString());
         });
         return imports;
+    }
+
+    private String getCurrentPackageName(ClassOrInterfaceDeclaration clazz) {
+        String currentPackageName = ((PackageDeclaration)((CompilationUnit) clazz.getParentNode().get())
+                .getPackageDeclaration().get()).toString();
+        currentPackageName = currentPackageName.contains("\n") ? currentPackageName.split("\n")[0] : currentPackageName;
+        currentPackageName = currentPackageName.contains(";") ? currentPackageName.split(";")[0] : currentPackageName;
+        return currentPackageName;
     }
 
     /**
@@ -133,8 +139,9 @@ public class MainParser {
         if (isPrimitiveOrJavaLangClass(className)) {
             return null;
         }
-        String searchImport = currentPackageName.split(" ")[1]; // removing "import" keyword
-        List<String> anyImport = allImports.stream().filter(currentImport -> currentImport.contains(className)).collect(Collectors.toList());
+        String searchImport = currentPackageName.split(" ")[1]; // removing "package" keyword
+        List<String> anyImport = allImports.stream().filter(currentImport -> currentImport.contains(className))
+                .collect(Collectors.toList());
         if (anyImport != null && anyImport.size() != 0)
         {
             searchImport = anyImport.get(0);
