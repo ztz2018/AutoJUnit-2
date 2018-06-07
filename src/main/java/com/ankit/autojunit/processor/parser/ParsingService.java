@@ -61,5 +61,4 @@ public interface ParsingService {
      */
     MethodDeclaration getMethodDeclarationByName(ClassOrInterfaceDeclaration clazz, String methodName);
 
-
 }

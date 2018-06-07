@@ -23,15 +23,19 @@ public class ReaderServiceImpl implements ReaderService {
 
     @Override
     public ParsedUnit parseFileWithName(String classPackage, String className) {
+        return mainParser.parseTheDeclaration(compileClass(classPackage, className));
+    }
 
+    @Override
+    public ClassOrInterfaceDeclaration compileClass(String classPackage, String className) {
         try {
             CompilationUnit compilationUnit = JavaParser.parse(new FileReader(processFilePath(rootDir, classPackage, className)));
             Optional<ClassOrInterfaceDeclaration> classMain = compilationUnit.getClassByName(className);
             if (classMain.isPresent()) {
-                ClassOrInterfaceDeclaration operationServicempl = classMain.get();
-                return mainParser.parseTheDeclaration(operationServicempl);
+                ClassOrInterfaceDeclaration classOrInterfaceDeclaration = classMain.get();
+                return classOrInterfaceDeclaration;
             } else {
-                throw new NullPointerException("Not found : " + className + "!");
+                throw new ClassNotFoundException("Class \"" + className + "\" not found in the package \"" + classPackage + "\"");
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
