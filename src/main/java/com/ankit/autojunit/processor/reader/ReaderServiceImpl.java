@@ -6,6 +6,7 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.FileReader;
@@ -17,8 +18,11 @@ public class ReaderServiceImpl implements ReaderService {
     @Autowired
     MainParser mainParser;
 
+    @Value("${reader.rootDir}")
+    private String rootDir;
+
     @Override
-    public  ParsedUnit parseFileWithName(String rootDir, String classPackage, String className) {
+    public ParsedUnit parseFileWithName(String classPackage, String className) {
 
         try {
             CompilationUnit compilationUnit = JavaParser.parse(new FileReader(processFilePath(rootDir, classPackage, className)));

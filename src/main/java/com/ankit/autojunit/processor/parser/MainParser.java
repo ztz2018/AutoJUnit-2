@@ -3,6 +3,7 @@ package com.ankit.autojunit.processor.parser;
 import com.ankit.autojunit.processor.model.ParsedUnit;
 import com.ankit.autojunit.processor.model.child.MyMethodDeclaration;
 import com.ankit.autojunit.processor.model.child.Variable;
+import com.ankit.autojunit.processor.reader.ReaderService;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
@@ -15,6 +16,7 @@ import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.stmt.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -26,6 +28,9 @@ import java.util.stream.Collectors;
 
 @Component
 public class MainParser implements ParsingService{
+
+    @Autowired
+    ReaderService readerService;
 
     public ParsedUnit parseTheDeclaration(ClassOrInterfaceDeclaration clazz) {
 

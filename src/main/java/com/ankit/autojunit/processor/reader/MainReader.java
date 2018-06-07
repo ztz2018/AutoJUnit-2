@@ -20,9 +20,6 @@ public class MainReader {
     @Autowired
     ReaderService readerService;
 
-    @Value("${reader.rootDir}")
-    private String rootDir ;
-
     @Value("${reader.classPackage}")
     private String classPackage;
 
@@ -31,7 +28,7 @@ public class MainReader {
 
     @GetMapping("/read")
     public ResponseEntity reader() {
-        return ResponseEntity.ok(readerService.parseFileWithName(rootDir, classPackage, className));
+        return ResponseEntity.ok(readerService.parseFileWithName(classPackage, className));
     }
 
 }
