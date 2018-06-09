@@ -1,4 +1,4 @@
-package com.ankit.autojunit.processor.model.child;
+package com.ankit.autojunit.processor.model;
 
 import lombok.Data;
 

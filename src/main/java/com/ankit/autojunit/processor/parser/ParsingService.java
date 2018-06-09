@@ -1,8 +1,8 @@
 package com.ankit.autojunit.processor.parser;
 
 import com.ankit.autojunit.processor.model.ParsedUnit;
-import com.ankit.autojunit.processor.model.child.MyMethodDeclaration;
-import com.ankit.autojunit.processor.model.child.Variable;
+import com.ankit.autojunit.processor.model.MyMethodDeclaration;
+import com.ankit.autojunit.processor.model.Variable;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 
@@ -62,5 +62,8 @@ public interface ParsingService {
     MethodDeclaration getMethodDeclarationByName(ClassOrInterfaceDeclaration clazz, String methodName);
 
     void addExternalServiceDetails(MyMethodDeclaration myMethodDeclaration);
+
+    List<MethodDeclaration> getInternalServices(ClassOrInterfaceDeclaration clazz, String currentPackage,
+        List<String> allImports, List<Variable> autowiredObjects);
 
 }

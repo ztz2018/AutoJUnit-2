@@ -1,8 +1,8 @@
 package com.ankit.autojunit.processor.model;
 
-import com.ankit.autojunit.processor.model.child.MyMethodDeclaration;
-import com.ankit.autojunit.processor.model.child.Variable;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.github.javaparser.ast.body.MethodDeclaration;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -22,5 +22,8 @@ public class ParsedUnit {
     private List<String> imports = new ArrayList<>();
     private List<Variable> classVariables = new ArrayList<>();
     private List<MyMethodDeclaration> externalServices = new ArrayList<>();
+
+    @JsonIgnore // ignoring because it is huge. ToDO : later, keep only what is necessary
+    private List<MethodDeclaration> internalServices = new ArrayList<>();
 
 }

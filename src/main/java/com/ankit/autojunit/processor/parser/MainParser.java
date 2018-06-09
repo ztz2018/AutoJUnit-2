@@ -1,8 +1,8 @@
 package com.ankit.autojunit.processor.parser;
 
 import com.ankit.autojunit.processor.model.ParsedUnit;
-import com.ankit.autojunit.processor.model.child.MyMethodDeclaration;
-import com.ankit.autojunit.processor.model.child.Variable;
+import com.ankit.autojunit.processor.model.MyMethodDeclaration;
+import com.ankit.autojunit.processor.model.Variable;
 import com.ankit.autojunit.processor.reader.ReaderService;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
@@ -44,7 +44,7 @@ public class MainParser implements ParsingService{
         parsedUnit.setAutowiredObjects(autowiredObjects);
         parsedUnit.setClassVariables(getGlobalVariables(clazz, parsedUnit.getImports(), currentPackageName));
         parsedUnit.setExternalServices(getExternalServices(clazz, autowiredObjects));
-
+        parsedUnit.setInternalServices(getInternalServices(clazz, currentPackageName, allImports, autowiredObjects));
         return parsedUnit;
     }
 
@@ -274,6 +274,21 @@ public class MainParser implements ParsingService{
         }
         return null;
     }
+
+    public List<MethodDeclaration> getInternalServices(ClassOrInterfaceDeclaration clazz, String currentPackage,
+             List<String> allImports, List<Variable> autowiredObjects) {
+
+        List<MethodDeclaration> internalServices = new ArrayList<>();
+
+        for(Node node : clazz.getChildNodes()) {
+            if (node instanceof MethodDeclaration) {
+                MethodDeclaration method = (MethodDeclaration) node;
+                internalServices.add(method);
+            }
+        }
+        return internalServices;
+    }
+
 
 
 
