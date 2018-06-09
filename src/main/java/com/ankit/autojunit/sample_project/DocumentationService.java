@@ -1,8 +1,10 @@
 package com.ankit.autojunit.sample_project;
 
+import com.ankit.autojunit.processor.model.ParsedUnit;
+
 public interface DocumentationService {
 
-    void registerCar(Car car);
+    ParsedUnit registerCar(Car car);
     void prepareTaxDocs(Car car);
     boolean requestCustomerCare(Car car);
 

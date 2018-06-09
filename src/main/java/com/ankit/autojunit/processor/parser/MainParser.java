@@ -4,7 +4,6 @@ import com.ankit.autojunit.processor.model.ParsedUnit;
 import com.ankit.autojunit.processor.model.child.MyMethodDeclaration;
 import com.ankit.autojunit.processor.model.child.Variable;
 import com.ankit.autojunit.processor.reader.ReaderService;
-import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
@@ -12,6 +11,7 @@ import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
@@ -34,7 +34,7 @@ public class MainParser implements ParsingService{
 
     public ParsedUnit parseTheDeclaration(ClassOrInterfaceDeclaration clazz) {
 
-        List<String> allImports = getRequiredImports(clazz);
+        List<String> allImports = getImports(clazz);
         String currentPackageName = getCurrentPackageName(clazz);
         List<Variable> autowiredObjects = getAutowiredObjects(clazz, allImports, currentPackageName);
         ParsedUnit parsedUnit = new ParsedUnit();
@@ -50,7 +50,7 @@ public class MainParser implements ParsingService{
 
     //   ToDo : As of now, it takes all the imports. Later, change to only required ones.
     @Override
-    public List<String> getRequiredImports(ClassOrInterfaceDeclaration clazz)
+    public List<String> getImports(ClassOrInterfaceDeclaration clazz)
     {
         List<String> imports = new ArrayList<>();
         ((CompilationUnit)clazz.getParentNode().get()).getImports().stream().forEach(imp ->{
@@ -112,7 +112,9 @@ public class MainParser implements ParsingService{
         if (isPrimitiveOrJavaLangClass(className)) {
             return null;
         }
-        String searchImport = currentPackageName.split(" ")[1]; // removing "package" keyword
+
+        // removing "package" keyword
+        String searchImport = currentPackageName.contains(" ") ? currentPackageName.split(" ")[1] : currentPackageName;
         List<String> anyImport = allImports.stream().filter(currentImport -> currentImport.contains(className))
                 .collect(Collectors.toList());
         if (anyImport != null && anyImport.size() != 0)
@@ -208,7 +210,7 @@ public class MainParser implements ParsingService{
                     methodDeclaration.setMethodName(methodCallExpr.getNameAsString());
 
                     //  ToDo : we need to visit the external (autowired) class and locate the method in order to find its return type and arguments type
-
+                    addExternalServiceDetails(methodDeclaration);
                     List<Variable> parameters = new ArrayList<>();
 
 
@@ -217,6 +219,39 @@ public class MainParser implements ParsingService{
 
             }
         }
+
+    }
+
+    @Override
+    public void addExternalServiceDetails(MyMethodDeclaration myMethodDeclaration) {
+
+        String classPackage = myMethodDeclaration.getMethodClassPackage();
+        String className = myMethodDeclaration.getMethodClassName();
+
+        ClassOrInterfaceDeclaration externalClassDefinition = readerService.compileClass(classPackage, className);
+        MethodDeclaration externalMethodDefinition = getMethodDeclarationByName(externalClassDefinition, myMethodDeclaration.getMethodName());
+        String returnType = externalMethodDefinition.getType().asString();
+        List<String> externalClassImports = getImports(externalClassDefinition);
+        String returnTypePackage = searchImportsForClass(externalClassImports, classPackage, returnType);
+
+        myMethodDeclaration.setMethodReturnTypeClass(returnType);
+        myMethodDeclaration.setMethodReturnTypeClassPackage(returnTypePackage);
+
+        for(Parameter parameter : externalMethodDefinition.getParameters()) {
+
+            Variable variable = new Variable();
+
+            variable.setClassName(parameter.getTypeAsString());
+            variable.setIdentifierName(parameter.getNameAsString());
+
+            variable.setClassPackage(searchImportsForClass(externalClassImports, classPackage, variable.getClassName()));
+
+            myMethodDeclaration.getMethodArguments().add(variable);
+        }
+
+
+        System.out.println("wassup man!");
+
 
     }
 

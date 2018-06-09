@@ -31,6 +31,9 @@ public class ReaderServiceImpl implements ReaderService {
         try {
             CompilationUnit compilationUnit = JavaParser.parse(new FileReader(processFilePath(rootDir, classPackage, className)));
             Optional<ClassOrInterfaceDeclaration> classMain = compilationUnit.getClassByName(className);
+            if (!classMain.isPresent()) {
+                classMain = compilationUnit.getInterfaceByName(className);
+            }
             if (classMain.isPresent()) {
                 ClassOrInterfaceDeclaration classOrInterfaceDeclaration = classMain.get();
                 return classOrInterfaceDeclaration;

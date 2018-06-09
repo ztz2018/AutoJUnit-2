@@ -15,7 +15,7 @@ public interface ParsingService {
     /**
      *  Gets all the imports
      */
-    List<String> getRequiredImports(ClassOrInterfaceDeclaration clazz);
+    List<String> getImports(ClassOrInterfaceDeclaration clazz);
 
     String getCurrentPackageName(ClassOrInterfaceDeclaration clazz);
 
@@ -60,5 +60,7 @@ public interface ParsingService {
      * Another helper api to find the method by its name
      */
     MethodDeclaration getMethodDeclarationByName(ClassOrInterfaceDeclaration clazz, String methodName);
+
+    void addExternalServiceDetails(MyMethodDeclaration myMethodDeclaration);
 
 }
