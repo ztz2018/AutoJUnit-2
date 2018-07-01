@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/autojunit/main")
-public class MainReader {
+public class MainReaderController {
 
     @Autowired
     ReaderService readerService;

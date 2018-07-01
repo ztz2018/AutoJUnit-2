@@ -1,5 +1,6 @@
 package com.ankit.autojunit.processor.reader;
 
+import com.ankit.autojunit.processor.CommonUtil;
 import com.ankit.autojunit.processor.model.ParsedUnit;
 import com.ankit.autojunit.processor.parser.MainParser;
 import com.github.javaparser.JavaParser;
@@ -21,6 +22,9 @@ public class ReaderServiceImpl implements ReaderService {
     @Value("${reader.rootDir}")
     private String rootDir;
 
+    @Value(("${reader.companyDomain}"))
+    private String companyDomain;
+
     @Override
     public ParsedUnit parseFileWithName(String classPackage, String className) {
         return mainParser.parseTheDeclaration(compileClass(classPackage, className));
@@ -29,7 +33,7 @@ public class ReaderServiceImpl implements ReaderService {
     @Override
     public ClassOrInterfaceDeclaration compileClass(String classPackage, String className) {
         try {
-            CompilationUnit compilationUnit = JavaParser.parse(new FileReader(processFilePath(rootDir, classPackage, className)));
+            CompilationUnit compilationUnit = JavaParser.parse(new FileReader(CommonUtil.processFilePath(rootDir, companyDomain, classPackage, className, true)));
             Optional<ClassOrInterfaceDeclaration> classMain = compilationUnit.getClassByName(className);
             if (!classMain.isPresent()) {
                 classMain = compilationUnit.getInterfaceByName(className);
@@ -43,21 +47,6 @@ public class ReaderServiceImpl implements ReaderService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public String processFilePath(String rootDir, String classPackage, String className) {
-
-        StringBuilder path = new StringBuilder();
-        rootDir = rootDir.contains(".") ? rootDir.replaceAll("[/.]", "/") : rootDir;
-        classPackage = classPackage.contains(".") ? classPackage.replaceAll("[/.]", "/") : classPackage;
-        path.append(rootDir);
-        path.append("/");
-        path.append(classPackage);
-        path.append("/");
-        path.append(className);
-        path.append(".java");
-        return path.toString();
     }
 
 }

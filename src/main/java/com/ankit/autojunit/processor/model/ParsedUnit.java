@@ -11,6 +11,7 @@ import java.util.List;
 @Data
 @JsonPropertyOrder({
         "className",
+        "classPackage",
         "imports",
         "classVariables",
         "autowiredObjects",
@@ -18,6 +19,7 @@ import java.util.List;
 public class ParsedUnit {
 
     private String className;
+    private String classPackage;
     private List<Variable> autowiredObjects = new ArrayList<>();
     private List<String> imports = new ArrayList<>();
     private List<Variable> classVariables = new ArrayList<>();

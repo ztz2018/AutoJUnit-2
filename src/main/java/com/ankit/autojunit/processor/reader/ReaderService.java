@@ -7,7 +7,5 @@ public interface ReaderService {
 
     ParsedUnit parseFileWithName(String fileLocation, String fileName);
 
-    String processFilePath(String rootDir, String classPackage, String className);
-
     ClassOrInterfaceDeclaration compileClass(String classPackage, String className);
 }

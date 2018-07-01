@@ -1,5 +1,6 @@
 package com.ankit.autojunit.processor.parser;
 
+import com.ankit.autojunit.processor.arranger.ArrangeService;
 import com.ankit.autojunit.processor.model.ParsedUnit;
 import com.ankit.autojunit.processor.model.MyMethodDeclaration;
 import com.ankit.autojunit.processor.model.Variable;
@@ -32,6 +33,9 @@ public class MainParser implements ParsingService{
     @Autowired
     ReaderService readerService;
 
+    @Autowired
+    ArrangeService arrangeService;
+
     public ParsedUnit parseTheDeclaration(ClassOrInterfaceDeclaration clazz) {
 
         List<String> allImports = getImports(clazz);
@@ -40,11 +44,15 @@ public class MainParser implements ParsingService{
         ParsedUnit parsedUnit = new ParsedUnit();
 
         parsedUnit.setClassName(clazz.getNameAsString());
+        parsedUnit.setClassPackage(clazz.getParentNode().get().getChildNodes().get(0).getChildNodes().get(0).toString());
         parsedUnit.setImports(allImports);
         parsedUnit.setAutowiredObjects(autowiredObjects);
         parsedUnit.setClassVariables(getGlobalVariables(clazz, parsedUnit.getImports(), currentPackageName));
         parsedUnit.setExternalServices(getExternalServices(clazz, autowiredObjects));
         parsedUnit.setInternalServices(getInternalServices(clazz, currentPackageName, allImports, autowiredObjects));
+
+        arrangeService.arrange(parsedUnit);
+
         return parsedUnit;
     }
 
@@ -248,11 +256,6 @@ public class MainParser implements ParsingService{
 
             myMethodDeclaration.getMethodArguments().add(variable);
         }
-
-
-        System.out.println("wassup man!");
-
-
     }
 
     @Override
@@ -288,41 +291,4 @@ public class MainParser implements ParsingService{
         }
         return internalServices;
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
