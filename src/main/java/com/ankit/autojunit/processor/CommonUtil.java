@@ -37,33 +37,10 @@ public class CommonUtil {
         return path.toString();
     }
 
-    public static String processFilePath1(String rootDir, String companyDomain, String classPackage, String className, boolean isReading) {
-
-        StringBuilder path = new StringBuilder();
-
-        rootDir = rootDir.contains(".") ? rootDir.replaceAll("[/.]", "/") : rootDir;
-        path.append(rootDir);
-        path.append("/");
-
-        companyDomain = isReading && companyDomain.contains(".") ? companyDomain.replaceAll("[/.]", "/") : companyDomain;
-
-        path.append(companyDomain);
-        path.append("/");
-        path.append(classPackage);
-        if (isReading) path.append(".");
-        else path.append("/");
-        path.append(className);
-        path.append(".java");
-
-//        return path.toString();
-        return "src/main/java/com/ankit/autojunit/sample_project/OperationsServiceImpl.java";
-    }
-
-    public static void main(String [] args) throws Exception{
-        String fileName = "src/main/java/com/ankit/autojunit/sample_project/OperationsServiceImpl.java";
-        new FileReader(fileName);
-
-
+    public static String createVariableNameOfType(String type) {
+        String first = type.substring(0,1);
+        first = first.toLowerCase();
+        return first + type.substring(1);
     }
 
 }

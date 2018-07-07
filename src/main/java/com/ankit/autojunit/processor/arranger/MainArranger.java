@@ -1,14 +1,20 @@
 package com.ankit.autojunit.processor.arranger;
 
 import com.ankit.autojunit.processor.CommonUtil;
+import com.ankit.autojunit.processor.Constants;
 import com.ankit.autojunit.processor.model.ParsedUnit;
+import com.ankit.autojunit.processor.model.Variable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+import static com.ankit.autojunit.processor.CommonUtil.createVariableNameOfType;
 
 @Service
 public class MainArranger extends ArrangeService{
@@ -22,55 +28,70 @@ public class MainArranger extends ArrangeService{
     @Override
     public void arrange(ParsedUnit parsedUnit) {
 
-        final  StringBuilder classAsString = new StringBuilder();
-        classAsString.append(prepareBoilerPlate(parsedUnit));
+        final StringBuilder classAsString = new StringBuilder();
+        List<String> allImports = new ArrayList<>();
+
+        String allMocks = mockTheAutowiredObjects(parsedUnit, allImports);
 
 
+
+        String boilerPlate = prepareBoilerPlate(parsedUnit, allImports);
+
+        classAsString.append(boilerPlate);
+        classAsString.append(allMocks);
 
         classAsString.append("}");
         callWriter(classAsString.toString(), parsedUnit.getClassPackage(), parsedUnit.getClassName());
     }
 
     @Override
-    protected String prepareBoilerPlate(ParsedUnit parsedUnit) {
+    protected String prepareBoilerPlate(ParsedUnit parsedUnit, List<String> allImports) {
 
         String className = parsedUnit.getClassName();
         String classPackage = parsedUnit.getClassPackage();
 
-        StringBuilder boilerPlateStr = new StringBuilder();
-        boilerPlateStr.append("package " + classPackage + ";\n\n");
-        boilerPlateStr.append("import org.mockito.InjectMocks;\n\n");
-        boilerPlateStr.append("public class " + className + "Test {\n\n");
-        boilerPlateStr.append("\t@InjectMocks\n");
-        boilerPlateStr.append("\t" + className + " " + createVariableNameOfType(className) + ";\n\n");
+        allImports.add(Constants.IMPORT_FOR_INJECT_MOCKS);
 
+        StringBuilder boilerPlateStr = new StringBuilder();
+        boilerPlateStr.append(Constants.PACKAGE + " " + classPackage + ";\n\n");
+
+        for(String eachImport : allImports) {
+            boilerPlateStr.append(Constants.IMPORT + " " + eachImport + ";\n");
+        }
+        boilerPlateStr.append("\n");
+        boilerPlateStr.append("/* " + Constants.CREDITS + new Date() + " */\n");
+        boilerPlateStr.append(Constants.PUBLIC_CLASS + " " + className + Constants.TEST + " {\n\n");
+        boilerPlateStr.append("\t" + Constants.AT_INJECT_MOCKS + "\n");
+        boilerPlateStr.append("\t" + className + " " + createVariableNameOfType(className) + ";\n");
 
         return boilerPlateStr.toString();
     }
 
     @Override
-    protected void mockTheAutowiredObjects() {
+    protected String mockTheAutowiredObjects(ParsedUnit parsedUnit, List<String> allImports) {
+        StringBuilder allMocks = new StringBuilder("\n");
 
+        allImports.add(Constants.IMPORT_FOR_MOCK);
+
+        for (Variable ao : parsedUnit.getAutowiredObjects()) {
+            allMocks.append("\t" + Constants.AT_MOCK +  "\n");
+            allMocks.append("\t" + ao.getClassName() + " " + createVariableNameOfType(ao.getClassName() + ";\n\n"));
+            if (!parsedUnit.getClassPackage().equals(ao.getClassPackage())) {
+                allImports.add(ao.getClassPackage());
+            }
+        }
+
+        return allMocks.toString();
     }
 
     @Override
-    protected List<String> arrangeImports(List<String> allImports) {
+    protected String prepareSetupMethod(ParsedUnit parsedUnit, List<String> allImports) {
         return null;
     }
 
     @Override
-    protected void prepareSetupMethod() {
-
-    }
-
-    @Override
-    protected void prepareTestMethod() {
-
-    }
-
-    @Override
-    protected void prepareClassAsString() {
-
+    protected String prepareAllTestMethod(ParsedUnit parsedUnit, List<String> allImports) {
+        return null;
     }
 
     @Override
@@ -87,9 +108,4 @@ public class MainArranger extends ArrangeService{
         }
     }
 
-    private String createVariableNameOfType(String type) {
-        String first = type.substring(0,1);
-        first = first.toLowerCase();
-        return first + type.substring(1);
-    }
 }

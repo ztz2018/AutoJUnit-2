@@ -18,22 +18,19 @@ public abstract class ArrangeService {
     public abstract void arrange(ParsedUnit parsedUnit);
 
     /**
-     *  prepares className, injectMock
+     *  prepares className, injectMock, imports.
+     *  The last one is the only reason that this method needs to be called at the end.
      */
-    protected abstract String prepareBoilerPlate(ParsedUnit parsedUnit);
+    protected abstract String prepareBoilerPlate(ParsedUnit parsedUnit, List<String> allImports);
 
     /**
      *  Basically, this one operates on all the autowired Objects
      */
-    protected abstract void mockTheAutowiredObjects();
+    protected abstract String mockTheAutowiredObjects(ParsedUnit parsedUnit, List<String> allImports);
 
-    protected abstract List<String> arrangeImports(List<String> allImports);
+    protected abstract String prepareSetupMethod(ParsedUnit parsedUnit, List<String> allImports);
 
-    protected abstract void prepareSetupMethod();
-
-    protected abstract void prepareTestMethod();
-
-    protected abstract void prepareClassAsString();
+    protected abstract String prepareAllTestMethod(ParsedUnit parsedUnit, List<String> allImports);
 
     protected abstract void callWriter(String classAsString, String classPackage, String className);
 
